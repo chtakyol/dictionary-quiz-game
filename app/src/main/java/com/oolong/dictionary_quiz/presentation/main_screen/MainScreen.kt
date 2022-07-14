@@ -16,7 +16,9 @@ fun MainScreen(
     duration: String = "05:00",
 ) {
     Column {
-        LetterContainer()
+        LetterContainer(
+            answerStateForEachLetter = viewModel.answerStateOfLetters
+        )
         TimeContainer(duration = duration)
         QuestionContainer(question = viewModel.getQuestion())
         AnswerContainer(answer = viewModel.answer.uppercase())

@@ -11,13 +11,11 @@ import com.oolong.dictionary_quiz.domain.model.Definition
 import com.oolong.dictionary_quiz.domain.model.Meaning
 import com.oolong.dictionary_quiz.domain.model.WordInfo
 import com.oolong.dictionary_quiz.domain.repository.WordInfoRepository
+import com.oolong.dictionary_quiz.util.Utils.AnswerState
+import com.oolong.dictionary_quiz.util.Utils.letters
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,11 +38,19 @@ class MainScreenViewModel @Inject constructor(
     private var wordInformationListSingle by mutableStateOf(mutableStateListOf(defaultWordInfo))
     var questionNumber by mutableStateOf(0)
     var answer by mutableStateOf("")
+    var answerStateOfLetters by mutableStateOf(mutableMapOf<String, AnswerState>())
 
     init {
+        for (letter in letters) {
+            answerStateOfLetters[letter] = AnswerState.PASSIVE
+        }
+
+        answerStateOfLetters["a"] = AnswerState.IDLE
+
         viewModelScope.launch(Dispatchers.IO) {
             wordInfoRepository.getWordInfo()
             getWordInfo()
+            questionNumber++
         }
     }
 
@@ -57,7 +63,15 @@ class MainScreenViewModel @Inject constructor(
                 answer += event.letter
             }
             is MainViewEvent.OKButtonClicked -> {
-                //TODO evaluate the answer if it's real word, evaluate if it's right, go next question
+                if (answer.uppercase() == wordInformationListSingle[questionNumber].word.uppercase()) {
+                    answer = ""
+                    answerStateOfLetters[letters[questionNumber - 1]] = AnswerState.TRUE
+                } else {
+                    answer = ""
+                    answerStateOfLetters[letters[questionNumber - 1]] = AnswerState.FALSE
+                }
+                questionNumber++
+                answerStateOfLetters[letters[questionNumber - 1]] = AnswerState.IDLE
             }
         }
     }
@@ -77,6 +91,12 @@ class MainScreenViewModel @Inject constructor(
                         "${wordInfo.word}: ${wordInfo.meanings.first().definitions?.first()?.definition}"
                     )
                 }
+            } else {
+                wordInformationListSingle.add(wordInfo)
+                Log.d(
+                    "MainScreen",
+                    "${wordInfo.word}: ${wordInfo.meanings.first().definitions?.first()?.definition}"
+                )
             }
         }
     }
