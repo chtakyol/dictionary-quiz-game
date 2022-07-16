@@ -23,6 +23,7 @@ import com.oolong.dictionary_quiz.util.Utils.letters
 fun LetterContainer(
     answerStateForEachLetter: Map<String, AnswerState> = mapOf("a" to AnswerState.PASSIVE),
     targetState: Int = 0
+    // TODO pass the answers and result map
 ) {
     Box(
         modifier = Modifier
@@ -92,6 +93,19 @@ fun Progress(
                     center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
                     radius = size.minDimension / 3
                 )
+                .padding(8.dp)
+                .background(Color.White)
+        ){
+            for (letter in letters) {
+                item {
+                    answerStateForEachLetter[letter]?.let {
+                        Letter(
+                            letter = letter,
+                            answerState = it
+                        )
+                    }
+                }
+
             }
         }
     }
