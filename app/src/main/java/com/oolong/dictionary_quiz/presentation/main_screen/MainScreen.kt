@@ -17,7 +17,8 @@ fun MainScreen(
 ) {
     Column {
         LetterContainer(
-            answerStateForEachLetter = viewModel.answerStateOfLetters
+            answerStateForEachLetter = viewModel.answerStateOfLetters,
+            targetState = viewModel.targetState
         )
         TimeContainer(duration = duration)
         QuestionContainer(question = viewModel.getQuestion())

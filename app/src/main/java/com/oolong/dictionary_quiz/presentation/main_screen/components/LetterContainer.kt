@@ -1,11 +1,14 @@
 package com.oolong.dictionary_quiz.presentation.main_screen.components
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -15,10 +18,11 @@ import androidx.compose.ui.unit.dp
 import com.oolong.dictionary_quiz.util.Utils.AnswerState
 import com.oolong.dictionary_quiz.util.Utils.letters
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun LetterContainer(
-    // TODO pass the answers and result map
-    answerStateForEachLetter: Map<String, AnswerState> = mapOf("a" to AnswerState.PASSIVE)
+    answerStateForEachLetter: Map<String, AnswerState> = mapOf("a" to AnswerState.PASSIVE),
+    targetState: Int = 0
 ) {
     Box(
         modifier = Modifier
@@ -27,20 +31,67 @@ fun LetterContainer(
             .background(Color.Cyan),
         contentAlignment = Alignment.Center
     ) {
-        LazyRow(
+        Column(
             modifier = Modifier
-                .padding(8.dp)
-                .background(Color.White)
-        ){
-            for (letter in letters) {
-                item {
-                    answerStateForEachLetter[letter]?.let {
-                        Letter(
-                            letter = letter,
-                            answerState = it
-                        )
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceAround
+        ) {
+            Progress()
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+//                Button(onClick = { count++ }) {
+//                    Text("Add")
+//                }
+                AnimatedContent(
+                    targetState = targetState,
+                    transitionSpec = {
+                         if (targetState > initialState) {
+                             slideInHorizontally { width -> width } + fadeIn() with
+                                     slideOutHorizontally { width -> -width } + fadeOut()
+                         } else {
+                             slideInHorizontally { width -> -width } + fadeIn() with
+                                     slideOutHorizontally { width -> width } + fadeOut()
+                         }.using(
+                             SizeTransform(clip = false)
+                         )
                     }
+                ) { targetCount ->
+                    Letter(
+                        letter = letters[targetCount],
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun Progress(
+    modifier: Modifier = Modifier,
+    answerStateForEachLetter: Map<String, AnswerState> = mapOf("a" to AnswerState.PASSIVE)
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        repeat(letters.size) {
+            Canvas(
+                modifier = Modifier
+                    .size(12.dp, 12.dp)
+                    .background(Color.Green),
+            ) {
+                val canvasWidth = size.width
+                val canvasHeight = size.height
+                drawCircle(
+                    color = Color.LightGray,
+                    center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
+                    radius = size.minDimension / 3
+                )
             }
         }
     }
@@ -52,7 +103,6 @@ fun Letter(
     letter: String = "a",
     answerState: AnswerState = AnswerState.PASSIVE
 ) {
-
     val circleColor = when(answerState) {
         AnswerState.PASSIVE -> { Color.Blue }
         AnswerState.IDLE -> { Color.Gray }
@@ -60,7 +110,6 @@ fun Letter(
         AnswerState.FALSE -> { Color.Red }
         AnswerState.PASS -> { Color.Yellow }
     }
-
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -78,7 +127,6 @@ fun Letter(
                 radius = size.minDimension / 3
             )
         }
-
         Text(
             modifier = Modifier
                 .padding(16.dp),
@@ -97,4 +145,10 @@ fun PreviewLetterContainer() {
 @Preview
 fun PreviewLetter() {
     Letter()
+}
+
+@Composable
+@Preview
+fun PreviewProgress() {
+    Progress()
 }

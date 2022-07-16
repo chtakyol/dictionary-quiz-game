@@ -39,6 +39,7 @@ class MainScreenViewModel @Inject constructor(
     var questionNumber by mutableStateOf(0)
     var answer by mutableStateOf("")
     var answerStateOfLetters by mutableStateOf(mutableMapOf<String, AnswerState>())
+    var targetState by mutableStateOf(0)
 
     init {
         for (letter in letters) {
@@ -70,6 +71,7 @@ class MainScreenViewModel @Inject constructor(
                     answer = ""
                     answerStateOfLetters[letters[questionNumber - 1]] = AnswerState.FALSE
                 }
+                targetState++
                 questionNumber++
                 answerStateOfLetters[letters[questionNumber - 1]] = AnswerState.IDLE
             }
